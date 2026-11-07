@@ -1,10 +1,8 @@
-
 TgCrypto
 ffmpeg-python
 future
 git+https://github.com/pyrogram/pyrogram@master
 pytgcalls==3.0.0.dev22
-av==12.3.0
 wget
 tswift
 requests
