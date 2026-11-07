@@ -1,13 +1,12 @@
 
 import re
-from asyncio import sleep
 
 from youtube_dl import YoutubeDL
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pytgcalls import GroupCallFactory
 
-from config import API_ID, API_HASH, SESSION_NAME, BOT_USERNAME
+from config import API_ID, API_HASH, ASSISTANT_SESSION, BOT_USERNAME
 from helpers.decorators import authorized_users_only
 from helpers.filters import command, edited
 
@@ -23,9 +22,10 @@ ydl_opts = {
 ydl = YoutubeDL(ydl_opts)
 
 app = Client(
-    SESSION_NAME,
+    "Misery",
     api_id=API_ID,
     api_hash=API_HASH,
+    session_string=ASSISTANT_SESSION,
 )
 
 group_call_factory = GroupCallFactory(
