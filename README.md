@@ -12,7 +12,7 @@
 ## •ᴅᴇᴘʟᴏʏ ᴍɪsᴇʀʏ ᴛᴏ ʜᴇʀᴏᴋᴜ 
 [Best Way To Host Misery]
 
-<a href="https://heroku.com/deploy?template=https://github.com/TurdusMaximus/MiseryVideoStream"><img src="https://img.shields.io/badge/Deploy%20To%20Heroku-black?style=for-the-badge&logo=heroku" width="220" height="38.45"/></a>
+<a href="https://heroku.com/deploy?template=https://github.com/Hunlar/Dergo"><img src="https://img.shields.io/badge/Deploy%20To%20Heroku-black?style=for-the-badge&logo=heroku" width="220" height="38.45"/></a>
 
 
 ## •ᴅᴇᴘʟᴏʏ ᴏɴ ʀᴀɪʟᴡᴀʏ 
