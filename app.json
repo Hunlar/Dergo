@@ -32,8 +32,8 @@
       "description": "Assistant username without @",
       "required": true
     },
-    "SESSION_NAME": {
-      "description": "Pyrogram session string",
+    "ASSISTANT_SESSION": {
+      "description": "Assistant account Pyrogram String Session",
       "required": true
     },
     "SUDO_USERS": {
