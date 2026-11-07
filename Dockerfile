@@ -1,4 +1,3 @@
-
 FROM python:3.10-slim-bullseye
 
 ENV PYTHONUNBUFFERED=1
@@ -25,9 +24,8 @@ WORKDIR /py
 
 COPY requirements.txt .
 
-RUN python -m pip install --upgrade pip
-RUN python -m pip install "setuptools==59.8.0" "wheel" "Cython==0.29.37"
-RUN python -m pip install --no-build-isolation -r requirements.txt
+RUN python -m pip install --upgrade pip setuptools wheel
+RUN python -m pip install -r requirements.txt
 
 COPY . .
 
