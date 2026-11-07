@@ -45,16 +45,10 @@
         }
     },
     "addons": [],
-    "buildpacks": [
-        {
-            "url": "free"
-        }
-    ],
-    "formation": {
-        "worker": {
-            "quantity": 1,
-            "size": "free"
-        }
-    },
-    "stack": "container"
+"formation": {
+  "worker": {
+    "quantity": 1
+  }
+},
+"stack": "container"
 }
