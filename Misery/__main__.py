@@ -1,21 +1,12 @@
-
 import asyncio
-from pyrogram import Client, idle
-from config import API_ID, API_HASH, BOT_TOKEN
+from pyrogram import idle
+from Misery import Misery
 from Misery.VideoStreaming import app
-
-Misery = Client(
-    ":memory:",
-    API_ID,
-    API_HASH,
-    bot_token=BOT_TOKEN,
-    plugins=dict(root="Misery"),
-)
 
 
 async def main():
     await Misery.start()
-    print("Bot istemcisi başlatıldı.")
+    print("Bot başlatıldı.")
 
     await app.start()
     print("Yardımcı hesap başlatıldı.")
