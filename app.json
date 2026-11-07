@@ -9,7 +9,7 @@
     "video stream"
   ],
   "website": "https://t.me/XeBorn",
-  "repository": "https://github.com/Hunlar/Derga",
+  "repository": "https://github.com/Hunlar/Dergo",
   "success_url": "https://t.me/TurdusMaximus",
   "env": {
     "API_ID": {
@@ -50,5 +50,6 @@
     "worker": {
       "quantity": 1
     }
-  }
+  },
+  "stack": "container"
 }
