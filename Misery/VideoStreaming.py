@@ -1,10 +1,12 @@
-
+import asyncio
 import re
 
 from pyrogram import Client, filters
 from pyrogram.types import Message
+
 from pytgcalls import PyTgCalls
-from youtube_dl import YoutubeDL
+from pytgcalls.types import AudioQuality, MediaStream, VideoQuality
+from yt_dlp import YoutubeDL
 
 from config import API_ID, API_HASH, ASSISTANT_SESSION, BOT_USERNAME
 from Misery import Misery
@@ -23,13 +25,26 @@ call_py = PyTgCalls(app)
 
 VIDEO_CALL = set()
 
+
 ydl_opts = {
     "format": "best[ext=mp4]/best",
-    "geo-bypass": True,
-    "nocheckcertificate": True,
+    "quiet": True,
+    "no_warnings": True,
+    "noplaylist": True,
 }
 
-ydl = YoutubeDL(ydl_opts)
+
+def get_video_url(url):
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+        if "entries" in info:
+            info = next(iter(info["entries"]), None)
+
+        if not info or not info.get("url"):
+            raise Exception("Video bağlantısı alınamadı.")
+
+        return info["url"]
 
 
 @Misery.on_message(
@@ -41,81 +56,62 @@ async def vstream(_, m: Message):
     chat_id = m.chat.id
 
     if chat_id in VIDEO_CALL:
-        await m.reply_text("Önce mevcut yayını /stop ile durdurmalısın.")
+        await m.reply_text("Önce mevcut yayını /stop ile durdur.")
         return
 
     media = m.reply_to_message
     parts = (m.text or "").split(maxsplit=1)
 
-    if len(parts) > 1:
-        query = parts[1].strip()
-        msg = await m.reply_text("🔄 Yayın hazırlanıyor...")
+    msg = await m.reply_text("🎬 Video hazırlanıyor...")
 
-        ytstream = query
+    try:
+        if len(parts) > 1:
+            query = parts[1].strip()
 
-        if re.match(
-            r"^(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+",
-            query,
-        ):
-            try:
-                info = ydl.extract_info(query, download=False)
-                formats = info.get("formats", [])
+            if not query.startswith(("http://", "https://")):
+                raise Exception("Lütfen geçerli bir video bağlantısı gönder.")
 
-                ytstream = next(
-                    (
-                        f["url"]
-                        for f in reversed(formats)
-                        if f.get("url") and f.get("vcodec") != "none"
-                    ),
-                    None,
-                )
+            stream = query
 
-                if not ytstream:
-                    raise Exception("Oynatılabilir video bulunamadı.")
+            if re.search(
+                r"(youtube\.com|youtu\.be)",
+                query,
+                re.IGNORECASE,
+            ):
+                stream = await asyncio.to_thread(get_video_url, query)
 
-            except Exception as e:
-                await msg.edit(f"❌ YouTube hatası: `{e}`")
-                return
+        elif media and (media.video or media.document):
+            if media.document and not (
+                media.document.mime_type
+                and media.document.mime_type.startswith("video/")
+            ):
+                raise Exception("Yanıt verdiğin dosya video değil.")
 
-        try:
-            await call_py.play(chat_id, ytstream)
-            VIDEO_CALL.add(chat_id)
-            await msg.edit("✅ Yayın başladı!")
+            stream = await media.download()
 
-        except Exception as e:
-            await msg.edit(f"❌ Yayın başlatılamadı:\n`{e}`")
-
-        return
-
-    if media and (media.video or media.document):
-        if media.document and not (
-            media.document.mime_type
-            and media.document.mime_type.startswith("video/")
-        ):
-            await m.reply_text("Lütfen video dosyasına yanıt ver.")
-            return
-
-        msg = await m.reply_text("📥 Video hazırlanıyor...")
-
-        try:
-            video = await media.download()
-
-            if not video:
+            if not stream:
                 raise Exception("Video indirilemedi.")
 
-            await call_py.play(chat_id, video)
-            VIDEO_CALL.add(chat_id)
+        else:
+            raise Exception(
+                "Bir video bağlantısı gönder veya video dosyasına yanıt ver."
+            )
 
-            await msg.edit("✅ Video yayını başladı!")
+        await call_py.play(
+            chat_id,
+            MediaStream(
+                stream,
+                AudioQuality.HIGH,
+                VideoQuality.HD_720p,
+            ),
+        )
 
-        except Exception as e:
-            await msg.edit(f"❌ Yayın başlatılamadı:\n`{e}`")
+        VIDEO_CALL.add(chat_id)
 
-        return
+        await msg.edit("✅ Video yayını başladı!")
 
-    await m.reply_text(
-        "Bir YouTube bağlantısı gönder veya bir video mesajına yanıt ver."
-    )
+    except Exception as e:
+        await msg.edit(f"❌ Video yayın hatası:\n`{e}`")
 
 
 @Misery.on_message(
