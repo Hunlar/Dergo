@@ -2,11 +2,12 @@
 import re
 
 from youtube_dl import YoutubeDL
-from pyrogram import Client, filters
+from pyrogram import filters
 from pyrogram.types import Message
 from pytgcalls import GroupCallFactory
 
 from config import API_ID, API_HASH, ASSISTANT_SESSION, BOT_USERNAME
+from Misery import Misery
 from helpers.decorators import authorized_users_only
 from helpers.filters import command, edited
 
@@ -21,7 +22,7 @@ ydl_opts = {
 
 ydl = YoutubeDL(ydl_opts)
 
-app = Client(
+app = __import__("pyrogram").Client(
     "Misery",
     api_id=API_ID,
     api_hash=API_HASH,
@@ -34,13 +35,12 @@ group_call_factory = GroupCallFactory(
 )
 
 
-@Client.on_message(
+@Misery.on_message(
     command(["vplay", f"vplay@{BOT_USERNAME}"])
     & filters.group
     & ~edited
 )
 async def vstream(_, m: Message):
-
     chat_id = m.chat.id
 
     if chat_id in VIDEO_CALL:
@@ -69,8 +69,7 @@ async def vstream(_, m: Message):
                     (
                         f["url"]
                         for f in reversed(formats)
-                        if f.get("url")
-                        and f.get("vcodec") != "none"
+                        if f.get("url") and f.get("vcodec") != "none"
                     ),
                     None
                 )
@@ -82,20 +81,13 @@ async def vstream(_, m: Message):
                 await msg.edit(f"❌ YouTube hatası: `{e}`")
                 return
 
-            await msg.edit("▶️ **YouTube yayını başlatılıyor...**")
-
         else:
             ytstream = query
-            await msg.edit("▶️ **Canlı yayın başlatılıyor...**")
 
         try:
             group_call = group_call_factory.get_group_call()
-
             await group_call.join(chat_id)
-            await group_call.start_video(
-                ytstream,
-                repeat=False
-            )
+            await group_call.start_video(ytstream, repeat=False)
 
             VIDEO_CALL[chat_id] = group_call
             STREAM.add(chat_id)
@@ -124,12 +116,8 @@ async def vstream(_, m: Message):
                 raise Exception("Video indirilemedi.")
 
             group_call = group_call_factory.get_group_call()
-
             await group_call.join(chat_id)
-            await group_call.start_video(
-                video,
-                repeat=False
-            )
+            await group_call.start_video(video, repeat=False)
 
             VIDEO_CALL[chat_id] = group_call
             STREAM.add(chat_id)
@@ -146,14 +134,13 @@ async def vstream(_, m: Message):
     )
 
 
-@Client.on_message(
+@Misery.on_message(
     command(["stop", f"stop@{BOT_USERNAME}"])
     & filters.group
     & ~edited
 )
 @authorized_users_only
 async def stop(_, m: Message):
-
     chat_id = m.chat.id
 
     if chat_id not in VIDEO_CALL:
@@ -162,7 +149,6 @@ async def stop(_, m: Message):
 
     try:
         await VIDEO_CALL[chat_id].stop()
-
         del VIDEO_CALL[chat_id]
         STREAM.discard(chat_id)
 
