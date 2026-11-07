@@ -1,10 +1,11 @@
+
 from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
 
 Misery = Client(
     ":memory:",
-    API_ID,
-    API_HASH,
+    api_id=API_ID,
+    api_hash=API_HASH,
     bot_token=BOT_TOKEN,
     plugins={
         "root": "Misery",
@@ -13,6 +14,7 @@ Misery = Client(
             "VideoStreaming",
             "song",
             "ytsearch",
-        ]
-    }
+            "MiseryInlineSearch",
+        ],
+    },
 )
