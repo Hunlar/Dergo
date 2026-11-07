@@ -17,8 +17,9 @@ API_HASH = getenv(
 )
 
 SESSION_NAME = "Misery"
+ASSISTANT_SESSION = getenv("ASSISTANT_SESSION")
 
-DURATION_LIMIT = int(getenv("DURATION_LIMIT", "50"))
+DURATION_LIMIT = int(getenv("DURATION_LIMIT", "180"))
 
 SUDO_USERS = list(
     map(int, getenv("SUDO_USERS", "").split())
