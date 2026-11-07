@@ -1,11 +1,9 @@
-
 numpy==1.23.5
 opencv-python-headless==4.5.5.62
 TgCrypto
 ffmpeg-python
 future
-git+https://github.com/pyrogram/pyrogram@master
-pytgcalls==3.0.0.dev22
+py-tgcalls[pyrogram]==3.0.0
 wget
 tswift
 requests
