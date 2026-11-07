@@ -1,10 +1,10 @@
 
 import re
 
-from youtube_dl import YoutubeDL
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.types import Message
-from pytgcalls import GroupCallFactory
+from pytgcalls import PyTgCalls
+from youtube_dl import YoutubeDL
 
 from config import API_ID, API_HASH, ASSISTANT_SESSION, BOT_USERNAME
 from Misery import Misery
@@ -12,27 +12,24 @@ from helpers.decorators import authorized_users_only
 from helpers.filters import command, edited
 
 
-STREAM = set()
-VIDEO_CALL = {}
-
-ydl_opts = {
-    "geo-bypass": True,
-    "nocheckcertificate": True,
-}
-
-ydl = YoutubeDL(ydl_opts)
-
-app = __import__("pyrogram").Client(
+app = Client(
     "Misery",
     api_id=API_ID,
     api_hash=API_HASH,
     session_string=ASSISTANT_SESSION,
 )
 
-group_call_factory = GroupCallFactory(
-    app,
-    GroupCallFactory.MTPROTO_CLIENT_TYPE.PYROGRAM
-)
+call_py = PyTgCalls(app)
+
+VIDEO_CALL = set()
+
+ydl_opts = {
+    "format": "best[ext=mp4]/best",
+    "geo-bypass": True,
+    "nocheckcertificate": True,
+}
+
+ydl = YoutubeDL(ydl_opts)
 
 
 @Misery.on_message(
@@ -47,23 +44,22 @@ async def vstream(_, m: Message):
         await m.reply_text("Önce mevcut yayını /stop ile durdurmalısın.")
         return
 
-    if not m.text:
-        await m.reply_text("Bir YouTube bağlantısı gönder veya bir videoya yanıt ver.")
-        return
-
     media = m.reply_to_message
-    parts = m.text.split(maxsplit=1)
+    parts = (m.text or "").split(maxsplit=1)
 
     if len(parts) > 1:
         query = parts[1].strip()
-        msg = await m.reply_text("🔄 **Yayın hazırlanıyor...**")
+        msg = await m.reply_text("🔄 Yayın hazırlanıyor...")
 
-        regex = r"^(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+"
+        ytstream = query
 
-        if re.match(regex, query):
+        if re.match(
+            r"^(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+",
+            query,
+        ):
             try:
-                meta = ydl.extract_info(query, download=False)
-                formats = meta.get("formats", [])
+                info = ydl.extract_info(query, download=False)
+                formats = info.get("formats", [])
 
                 ytstream = next(
                     (
@@ -71,7 +67,7 @@ async def vstream(_, m: Message):
                         for f in reversed(formats)
                         if f.get("url") and f.get("vcodec") != "none"
                     ),
-                    None
+                    None,
                 )
 
                 if not ytstream:
@@ -81,18 +77,10 @@ async def vstream(_, m: Message):
                 await msg.edit(f"❌ YouTube hatası: `{e}`")
                 return
 
-        else:
-            ytstream = query
-
         try:
-            group_call = group_call_factory.get_group_call()
-            await group_call.join(chat_id)
-            await group_call.start_video(ytstream, repeat=False)
-
-            VIDEO_CALL[chat_id] = group_call
-            STREAM.add(chat_id)
-
-            await msg.edit("✅ **Yayın başladı!**")
+            await call_py.play(chat_id, ytstream)
+            VIDEO_CALL.add(chat_id)
+            await msg.edit("✅ Yayın başladı!")
 
         except Exception as e:
             await msg.edit(f"❌ Yayın başlatılamadı:\n`{e}`")
@@ -107,7 +95,7 @@ async def vstream(_, m: Message):
             await m.reply_text("Lütfen video dosyasına yanıt ver.")
             return
 
-        msg = await m.reply_text("📥 **Video indiriliyor...**")
+        msg = await m.reply_text("📥 Video hazırlanıyor...")
 
         try:
             video = await media.download()
@@ -115,14 +103,10 @@ async def vstream(_, m: Message):
             if not video:
                 raise Exception("Video indirilemedi.")
 
-            group_call = group_call_factory.get_group_call()
-            await group_call.join(chat_id)
-            await group_call.start_video(video, repeat=False)
+            await call_py.play(chat_id, video)
+            VIDEO_CALL.add(chat_id)
 
-            VIDEO_CALL[chat_id] = group_call
-            STREAM.add(chat_id)
-
-            await msg.edit("✅ **Video yayını başladı!**")
+            await msg.edit("✅ Video yayını başladı!")
 
         except Exception as e:
             await msg.edit(f"❌ Yayın başlatılamadı:\n`{e}`")
@@ -148,11 +132,10 @@ async def stop(_, m: Message):
         return
 
     try:
-        await VIDEO_CALL[chat_id].stop()
-        del VIDEO_CALL[chat_id]
-        STREAM.discard(chat_id)
+        await call_py.leave_call(chat_id)
+        VIDEO_CALL.discard(chat_id)
 
-        await m.reply_text("⏹ **Yayın durduruldu.**")
+        await m.reply_text("⏹ Yayın durduruldu.")
 
     except Exception as e:
         await m.reply_text(f"❌ Yayın durdurulamadı:\n`{e}`")
