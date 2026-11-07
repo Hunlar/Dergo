@@ -8,6 +8,11 @@ async def main():
     await Misery.start()
     print("Bot başlatıldı.")
 
+    print("Handler grupları:", {
+        group: len(handlers)
+        for group, handlers in Misery.dispatcher.groups.items()
+    })
+
     await app.start()
     print("Yardımcı hesap başlatıldı.")
 
