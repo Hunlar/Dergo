@@ -6,5 +6,13 @@ Misery = Client(
     API_ID,
     API_HASH,
     bot_token=BOT_TOKEN,
-    plugins=dict(root="Misery")
+    plugins={
+        "root": "Misery",
+        "include": [
+            "PmText",
+            "VideoStreaming",
+            "song",
+            "ytsearch",
+        ]
+    }
 )
