@@ -47,7 +47,7 @@
     "addons": [],
     "buildpacks": [
         {
-            "url": "heroku/python"
+            "url": "free"
         }
     ],
     "formation": {
@@ -56,5 +56,5 @@
             "size": "free"
         }
     },
-    "stack": "heroku-24"
+    "stack": "container"
 }
