@@ -4,7 +4,6 @@ from pyrogram import Client, idle
 from config import API_ID, API_HASH, BOT_TOKEN
 from Misery.VideoStreaming import app
 
-
 Misery = Client(
     ":memory:",
     API_ID,
@@ -16,10 +15,10 @@ Misery = Client(
 
 async def main():
     await Misery.start()
-    print("[Your Misery Is Ready To Stream]")
+    print("Bot istemcisi başlatıldı.")
 
     await app.start()
-    print("Started Successfully")
+    print("Yardımcı hesap başlatıldı.")
 
     await idle()
 
@@ -29,4 +28,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    
