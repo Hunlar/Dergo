@@ -45,10 +45,16 @@
         }
     },
     "addons": [],
+"buildpacks": [
+{
+"url": "heroku/python"
+}
+],
 "formation": {
-  "worker": {
-    "quantity": 1
-  }
+"worker": {
+"quantity": 1,
+"size": "free"
+}
 },
 "stack": "container"
 }
